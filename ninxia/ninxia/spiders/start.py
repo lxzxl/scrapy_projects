@@ -3,7 +3,6 @@
 import urllib
 import urlparse
 
-import scrapy
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.http import Request
@@ -22,13 +21,21 @@ class StartSpider(CrawlSpider):
         Rule(LinkExtractor(allow=r'qyxx.jsp'), callback='parse_item'),
     )
 
+    custom_settings = {
+        'FEED_URI': 'outputs/users.csv',
+        'FEED_FORMAT': 'csv',
+        'FEED_EXPORTERS': {
+            'csv': 'ninxia.exporters.MyCsvItemExporter'
+        }
+    }
+
     def start_requests(self):
         payload = {
             'wherestr': "",
             'wherepre': " and ( t.blzt='1' and t.shzt='1' and t.sfwlqy in ('F','T') and b.zzlx in ('Z101','Z102','Z103','Z104','Z105','Z106','Z107','Z108','Z120','Z199'))",
             'sfwlqy': "('F','T')",
             'zzlx': "('Z101','Z102','Z103','Z104','Z105','Z106','Z107','Z108','Z120','Z199')",
-            'pagerec': 1,
+            'pagerec': 15,
             'pageno': 1
         }
         for i, url in enumerate(self.start_urls):
