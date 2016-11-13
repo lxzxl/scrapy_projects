@@ -35,7 +35,7 @@ class StartSpider(CrawlSpider):
             'wherepre': " and ( t.blzt='1' and t.shzt='1' and t.sfwlqy in ('F','T') and b.zzlx in ('Z101','Z102','Z103','Z104','Z105','Z106','Z107','Z108','Z120','Z199'))",
             'sfwlqy': "('F','T')",
             'zzlx': "('Z101','Z102','Z103','Z104','Z105','Z106','Z107','Z108','Z120','Z199')",
-            'pagerec': 15,
+            'pagerec': 5000,
             'pageno': 1
         }
         for i, url in enumerate(self.start_urls):
