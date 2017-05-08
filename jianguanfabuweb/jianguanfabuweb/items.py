@@ -33,5 +33,5 @@ class UserItem(Item):
 
 class UserItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
-    name_in = MapCompose(unicode.strip)
-    company_in = MapCompose(unicode.strip)
+    name_in = MapCompose(str.strip)
+    company_in = MapCompose(str.strip)

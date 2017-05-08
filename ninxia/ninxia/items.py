@@ -49,5 +49,5 @@ class UserItem(Item):
 
 
 class UserItemLoader(ItemLoader):
-    default_input_processor = MapCompose(replace_entities, unicode.strip)
+    default_input_processor = MapCompose(replace_entities, str.strip)
     default_output_processor = TakeFirst()
