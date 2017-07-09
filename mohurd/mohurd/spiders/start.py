@@ -53,8 +53,8 @@ class StartSpider(scrapy.Spider):
                 callback=self.parser_staff_list
             )
             self.default_payload['$pg'] += self.page_step
-            # if _ == 4:
-            break
+            if _ == 4:
+                break
 
     def parser_staff_list(self, response):
         # generate staff detail page request.
