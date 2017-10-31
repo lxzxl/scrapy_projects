@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import scrapy
 
 import re
 from math import ceil
@@ -9,9 +10,11 @@ from scrapy.http import Request
 from mohurd.items import CompanyItem
 
 
-class StartSpider(scrapy.Spider):
-    name = 'start'
-    start_urls = ['http://jzsc.mohurd.gov.cn/dataservice/query/staff/list']
+class CompSpider(scrapy.Spider):
+    name = "comp"
+    allowed_domains = ["http://jzsc.mohurd.gov.cn/dataservice/query/comp/list"]
+    start_urls = ['http://http://jzsc.mohurd.gov.cn/dataservice/query/comp/list/']
+
     custom_settings = {
         'FEED_URI': 'outputs/id-name.csv',
         'FEED_FORMAT': 'csv',
@@ -20,49 +23,42 @@ class StartSpider(scrapy.Spider):
         }
     }
 
-    exclude_types = [u'注册建造师']
-
     page_size = 45
     page_step = 45 / 15
 
     default_payload = {
         '$pg': 1,
         '$pgsz': page_size,
-        'ry_reg_type': ''
     }
 
     def parse(self, response):
-        # get all category
-        types = filter(
-            lambda t: t.css('::text').extract_first().strip() not in self.exclude_types,
-            response.css('.dropdown-menu.staff_dropdown>li>a[data-value]')
-        )
-        self.default_payload['ry_reg_type'] = ','.join(t.css('::attr(data-value)').extract_first() for t in types)
-
         # generate all page request.
         total = int(response.css('[sf=pagebar]').re_first(r'tt:(\d+)'))
         max_steps = int(ceil(1.0 * total / self.page_size))
         for _ in range(max_steps):
+            self.default_payload['$pg'] += self.page_step
             yield Request(
-                url='http://jzsc.mohurd.gov.cn/dataservice/query/staff/list',
+                url='http://jzsc.mohurd.gov.cn/dataservice/query/comp/list',
                 method='POST',
                 body=urllib.urlencode(self.default_payload),
                 headers={
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                callback=self.parser_staff_list
+                callback=self.parse_comp_list
             )
-            self.default_payload['$pg'] += self.page_step
             if _ == 4:
                 break
 
-    def parser_staff_list(self, response):
-        # generate staff detail page request.
+    def parse_comp_list(self, response):
+        # generate comp detail page request.
+        for tr in response.css('.personal tr'):
+            tr.css('.')
         for detail_path in response.css('.personal').xpath(
-                '//a[contains(@href, "/dataservice/query/staff/staffDetail/")]/@href').extract():
-            yield Request('http://jzsc.mohurd.gov.cn' + detail_path, callback=self.parse_staff)
+                '//a[contains(@href, "/dataservice/query/comp/compDetail/")]/@href').extract():
+            # yield Request('http://jzsc.mohurd.gov.cn' + detail_path, callback=self.parse_comp)
+            print(detail_path)
 
-    def parse_staff(self, response):
+    def parse_comp(self, response):
         company_sel = response.css('[data-qyid]')
         if company_sel:
             company_id = company_sel.css('::attr(data-qyid)').extract_first()
