@@ -31,6 +31,3 @@ class CompanyItem(Item):
     name = Field(
         display_name='单位名称'
     )
-    province = Field(
-        display_name='注册属地'
-    )

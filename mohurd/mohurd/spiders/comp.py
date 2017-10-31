@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-import scrapy
-
 import re
 from math import ceil
-import urllib
+import urllib.parse
 import scrapy
 from scrapy.http import Request
 
@@ -12,14 +10,13 @@ from mohurd.items import CompanyItem
 
 class CompSpider(scrapy.Spider):
     name = "comp"
-    allowed_domains = ["http://jzsc.mohurd.gov.cn/dataservice/query/comp/list"]
-    start_urls = ['http://http://jzsc.mohurd.gov.cn/dataservice/query/comp/list/']
+    start_urls = ['http://jzsc.mohurd.gov.cn/dataservice/query/comp/list']
 
     custom_settings = {
-        'FEED_URI': 'outputs/id-name.csv',
+        'FEED_URI': 'outputs/comp.csv',
         'FEED_FORMAT': 'csv',
         'FEED_EXPORTERS': {
-            'csv': 'mohurd.exporters.MyCsvItemExporter'
+            'csv': 'mohurd.exporters.CompExporter'
         }
     }
 
@@ -40,23 +37,22 @@ class CompSpider(scrapy.Spider):
             yield Request(
                 url='http://jzsc.mohurd.gov.cn/dataservice/query/comp/list',
                 method='POST',
-                body=urllib.urlencode(self.default_payload),
+                body=urllib.parse.urlencode(self.default_payload),
                 headers={
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 callback=self.parse_comp_list
             )
-            if _ == 4:
+            if _ == 1:
                 break
 
     def parse_comp_list(self, response):
         # generate comp detail page request.
-        for tr in response.css('.personal tr'):
-            tr.css('.')
-        for detail_path in response.css('.personal').xpath(
-                '//a[contains(@href, "/dataservice/query/comp/compDetail/")]/@href').extract():
-            # yield Request('http://jzsc.mohurd.gov.cn' + detail_path, callback=self.parse_comp)
-            print(detail_path)
+        for td in response.css('.personal').css('.primary'):
+            cell = td.css('a')
+            uid = cell.css('::attr(href)').re_first(r'comp/compDetail/(\d+)')
+            name = cell.css('::text').extract_first().strip()
+            yield CompanyItem(id=uid, name=name)
 
     def parse_comp(self, response):
         company_sel = response.css('[data-qyid]')

@@ -5,7 +5,7 @@ from scrapy.exporters import CsvItemExporter
 from mohurd.items import CompanyItem
 
 
-class MyCsvItemExporter(CsvItemExporter):
+class CompExporter(CsvItemExporter):
     def __init__(self, *args, **kwargs):
         kwargs['include_headers_line'] = False
         kwargs['fields_to_export'] = [
@@ -13,7 +13,7 @@ class MyCsvItemExporter(CsvItemExporter):
             'name',
         ]
 
-        super(MyCsvItemExporter, self).__init__(*args, **kwargs)
+        super(CompExporter, self).__init__(*args, **kwargs)
 
     def start_exporting(self):
         self.stream.seek(0)
